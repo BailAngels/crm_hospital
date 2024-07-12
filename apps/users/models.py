@@ -8,7 +8,6 @@ class User(AbstractUser):
         female = 'female', 'женщина'
         other = 'other', 'другое'
 
-
     middle_name = models.CharField(
         max_length=150,
         verbose_name='отчество',
@@ -22,14 +21,14 @@ class User(AbstractUser):
         choices=GenderChoices.choices,
         verbose_name='пол'
     )
-    
+
     def __str__(self):
         return self.username
-    
+
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-    
+
 
 class Doctor(User):
     class SpecialityChoices(models.TextChoices):
@@ -39,7 +38,6 @@ class Doctor(User):
         cardiology = 'cardiology', 'кардиолог'
         neurology = 'neurology', 'невролог'
         ophthalmology = 'ophthalmology', 'офтальмолог'
-
 
     is_chief_doctor = models.BooleanField(default=False)
 
@@ -51,20 +49,18 @@ class Doctor(User):
 
     def __str__(self):
         return f"Doctor: {self.username}"
-    
+
     class Meta:
         verbose_name = 'Доктор'
         verbose_name_plural = 'Доктора'
-    
 
-    
 
 class Nurse(User):
     is_busy = models.BooleanField(default=False)
 
     def __str__(self):
         return f'Nurse: {self.username}'
-    
+
     class Meta:
         verbose_name = 'Медсестра'
         verbose_name_plural = 'Медсестры'
@@ -85,3 +81,9 @@ class IsDoctorOrChiefDoctor(permissions.BasePermission):
         ) or (
             isinstance(request.user, Doctor) and not request.user.is_chief_doctor
         )
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user.is_authenticated and request.user.is_staff
